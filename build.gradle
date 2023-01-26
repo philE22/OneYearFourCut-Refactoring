@@ -1,0 +1,163 @@
+plugins {
+	id 'org.springframework.boot' version '2.7.5'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id "org.asciidoctor.jvm.convert" version "3.3.2" // Rest Docs
+	id 'java'
+	id 'jacoco'
+}
+
+jacoco {
+	//jaCoCo 버전
+	toolVersion = '0.8.5'
+}
+
+// groovy DSL
+
+jacocoTestReport {
+	reports {
+		// 원하는 리포트를 켜고 끌 수 있습니다.
+		html.enabled true
+		xml.enabled false
+		csv.enabled false
+
+//  각 리포트 타입 마다 리포트 저장 경로를 설정할 수 있습니다.
+//  html.destination file("$buildDir/jacocoHtml")
+//  xml.destination file("$buildDir/jacoco.xml")
+	}
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			element = 'CLASS'
+
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.90
+			}
+		}
+	}
+}
+
+// groovy DSL
+
+task testCoverage(type: Test) {
+	group 'verification'
+	description 'Runs the unit tests with coverage'
+
+	dependsOn(':test',
+			':jacocoTestReport',
+			':jacocoTestCoverageVerification')
+
+	tasks['jacocoTestReport'].mustRunAfter(tasks['test'])
+	tasks['jacocoTestCoverageVerification'].mustRunAfter(tasks['jacocoTestReport'])
+}
+group = 'com.codestates.mainproject'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	asciidoctorExtensions
+
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+
+//배포 설정
+jar {
+	enabled = false
+}
+
+//REST Docs
+ext {
+	set('snippetsDir', file("build/generated-snippets"))
+}
+
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'com.google.code.gson:gson:'
+	implementation	'org.springframework.boot:spring-boot-starter-security'
+	implementation	'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation	'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.jetbrains:annotations:23.0.0'
+
+    compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	implementation 'org.mapstruct:mapstruct:1.5.3.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly	'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	testImplementation 'org.springframework.security:spring-security-test'
+
+	//REST Docs
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	asciidoctorExtensions 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+
+	// AWS S3 Upload
+	implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.4.2'
+
+	implementation 'org.springframework.restdocs:spring-restdocs-core:2.0.6.RELEASE'
+	/*implementation group: 'org.springframework.restdocs', name: 'spring-restdocs-core', version: '3.0.0'*/
+
+	//mariadb 드라이버
+	implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client'
+
+	// 유효성 검증
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// 파일 위조, 변조 체크 Tika
+	implementation 'org.apache.tika:tika-core:2.6.0'
+	// Web Socket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	// stomp
+	implementation 'org.webjars:stomp-websocket:2.3.4'
+}
+
+//------------REST Docs ------------//
+tasks.named('test') {
+	outputs.dir snippetsDir
+	useJUnitPlatform()
+}
+
+tasks.named('asciidoctor') {
+	configurations "asciidoctorExtensions"
+	inputs.dir snippetsDir
+	dependsOn test
+}
+
+task copyDocument(type: Copy) {
+	dependsOn asciidoctor
+	from file("${asciidoctor.outputDir}")
+	into file("src/main/resources/static/docs")
+}
+
+build {
+	dependsOn copyDocument
+}
+
+bootJar {
+	dependsOn copyDocument
+	from ("${asciidoctor.outputDir}") {
+		into 'static/docs'
+	}
+}
+//------------REST Docs ------------//
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
