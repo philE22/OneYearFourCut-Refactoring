@@ -7,7 +7,9 @@ import com.codestates.mainproject.oneyearfourcut.domain.gallery.repository.Galle
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
+import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import javax.transaction.Transactional;
 
+import static com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,25 +37,30 @@ public class PostGalleryTest {
     @Autowired
     private JwtTokenizer jwtTokenizer;
     @Autowired
-    private  MemberRepository memberRepository;
+    private MemberRepository memberRepository;
     @Autowired
     private GalleryRepository galleryRepository;
+
+    String jwt;
+    Member member;
+    String title = "테스트 제목";
+    String content = "테스트 내용";
+
+    @BeforeEach
+    void setupJWT() {
+        member = memberRepository.findByEmail("test1@gmail.com").get();
+        jwt = jwtTokenizer.testJwtGenerator(member);
+    }
 
     @Test
     @DisplayName("정상적인 전시관 등록 시 성공 한다")
     void successTest() throws Exception {
         //given
-        Member findMember = memberRepository.findByEmail("test1@gmail.com").get();
-        String jwt = jwtTokenizer.testJwtGenerator(findMember);
-        String title = "테스트 제목";
-        String content = "테스트 내용";
-
         GalleryRequestDto galleryRequestDto = GalleryRequestDto.builder()
                 .title(title)
                 .content(content)
                 .build();
-
-        String httpContent = gson.toJson(galleryRequestDto);
+        String body = gson.toJson(galleryRequestDto);
 
 
         //when
@@ -61,7 +69,7 @@ public class PostGalleryTest {
                         .header("Authorization", jwt)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(httpContent)
+                        .content(body)
         );
 
         //then
@@ -74,18 +82,16 @@ public class PostGalleryTest {
     @Test
     void alreadyPostTest() throws Exception {
         //given
-        Member findMember = memberRepository.findByEmail("test1@gmail.com").get();
-        String jwt = jwtTokenizer.testJwtGenerator(findMember);
         GalleryRequestDto galleryRequestDto1 = GalleryRequestDto.builder()
                 .title("테스트 제목1")
                 .content("테스트 내용1")
                 .build();
-        String httpContent = gson.toJson(galleryRequestDto1);
+        String body = gson.toJson(galleryRequestDto1);
 
         Gallery gallery = Gallery.builder()
-                .member(findMember)
-                .title("테스트 제목")
-                .content("테스트 제목")
+                .member(member)
+                .title(title)
+                .content(content)
                 .status(GalleryStatus.OPEN)
                 .build();
         galleryRepository.save(gallery);
@@ -96,13 +102,13 @@ public class PostGalleryTest {
                         .header("Authorization", jwt)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(httpContent)
+                        .content(body)
         );
 
         //then
         actions
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.exception").value("OPEN_GALLERY_EXIST"));
+                .andExpect(jsonPath("$.status").value(OPEN_GALLERY_EXIST.getStatus()))
+                .andExpect(jsonPath("$.exception").value(OPEN_GALLERY_EXIST.name()));
 
     }
 
@@ -110,14 +116,10 @@ public class PostGalleryTest {
     @Test
     void noTitleTest() throws Exception {
         //given
-        Member findMember = memberRepository.findByEmail("test1@gmail.com").get();
-        String jwt = jwtTokenizer.testJwtGenerator(findMember);
-
         GalleryRequestDto galleryRequestDto = GalleryRequestDto.builder()
-                .content("테스트 내용")
+                .content(content)
                 .build();
-
-        String httpContent = gson.toJson(galleryRequestDto);
+        String body = gson.toJson(galleryRequestDto);
 
         //when
         ResultActions actions = mockMvc.perform(
@@ -125,7 +127,7 @@ public class PostGalleryTest {
                         .header("Authorization", jwt)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(httpContent)
+                        .content(body)
         );
 
         actions.andExpect(status().isBadRequest());
@@ -135,14 +137,10 @@ public class PostGalleryTest {
     @Test
     void noContentTest() throws Exception {
         //given
-        Member findMember = memberRepository.findByEmail("test1@gmail.com").get();
-        String jwt = jwtTokenizer.testJwtGenerator(findMember);
-
         GalleryRequestDto galleryRequestDto = GalleryRequestDto.builder()
-                .title("테스트 제목")
+                .title(title)
                 .build();
-
-        String httpContent = gson.toJson(galleryRequestDto);
+        String body = gson.toJson(galleryRequestDto);
 
         //when
         ResultActions actions = mockMvc.perform(
@@ -150,7 +148,7 @@ public class PostGalleryTest {
                         .header("Authorization", jwt)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(httpContent)
+                        .content(body)
         );
 
         actions.andExpect(status().isBadRequest());
@@ -160,15 +158,11 @@ public class PostGalleryTest {
     @Test
     void emptyContentTest() throws Exception {
         //given
-        Member findMember = memberRepository.findByEmail("test1@gmail.com").get();
-        String jwt = jwtTokenizer.testJwtGenerator(findMember);
-
         GalleryRequestDto galleryRequestDto = GalleryRequestDto.builder()
-                .title("테스트 제목")
+                .title(title)
                 .content("")
                 .build();
-
-        String httpContent = gson.toJson(galleryRequestDto);
+        String body = gson.toJson(galleryRequestDto);
 
         //when
         ResultActions actions = mockMvc.perform(
@@ -176,7 +170,7 @@ public class PostGalleryTest {
                         .header("Authorization", jwt)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(httpContent)
+                        .content(body)
         );
 
         actions.andExpect(status().isBadRequest());
@@ -186,15 +180,11 @@ public class PostGalleryTest {
     @Test
     void emptyTitleTest() throws Exception {
         //given
-        Member findMember = memberRepository.findByEmail("test1@gmail.com").get();
-        String jwt = jwtTokenizer.testJwtGenerator(findMember);
-
         GalleryRequestDto galleryRequestDto = GalleryRequestDto.builder()
                 .title("")
-                .content("테스트 내용")
+                .content(content)
                 .build();
-
-        String httpContent = gson.toJson(galleryRequestDto);
+        String body = gson.toJson(galleryRequestDto);
 
         //when
         ResultActions actions = mockMvc.perform(
@@ -202,7 +192,49 @@ public class PostGalleryTest {
                         .header("Authorization", jwt)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(httpContent)
+                        .content(body)
+        );
+
+        actions.andExpect(status().isBadRequest());
+    }
+    @DisplayName("제목이 space이면 전시관 등록이 실패한다")
+    @Test
+    void spaceTitleTest() throws Exception {
+        //given
+        GalleryRequestDto galleryRequestDto = GalleryRequestDto.builder()
+                .title(" ")
+                .content(content)
+                .build();
+        String body = gson.toJson(galleryRequestDto);
+
+        //when
+        ResultActions actions = mockMvc.perform(
+                post("/galleries")
+                        .header("Authorization", jwt)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+        );
+
+        actions.andExpect(status().isBadRequest());
+    }
+    @DisplayName("내용이 space이면 전시관 등록이 실패한다")
+    @Test
+    void spaceContentTest() throws Exception {
+        //given
+        GalleryRequestDto galleryRequestDto = GalleryRequestDto.builder()
+                .title(title)
+                .content(" ")
+                .build();
+        String body = gson.toJson(galleryRequestDto);
+
+        //when
+        ResultActions actions = mockMvc.perform(
+                post("/galleries")
+                        .header("Authorization", jwt)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
         );
 
         actions.andExpect(status().isBadRequest());
