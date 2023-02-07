@@ -48,11 +48,11 @@ public class PostArtworkTest {
     @MockBean
     private AwsS3Service awsS3Service;
 
-    Member galleryMember;
-    Member artworkMember;
-    Gallery gallery;
-    String jwt;
-    MockMultipartFile image = new MockMultipartFile(
+    private Member galleryMember;
+    private Member artworkMember;
+    private Gallery gallery;
+    private String jwt;
+    private MockMultipartFile image = new MockMultipartFile(
             "image",
             "image.png",
             "image/png",
