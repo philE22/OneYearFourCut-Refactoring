@@ -11,7 +11,9 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.entity.MemberStat
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
+import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,10 +53,8 @@ public class PostCommentTest {
     private Artwork savedArtwork;
     private String jwt;
 
-    @DisplayName("정상적인 작품 댓글 등록이 성공한다.")
-    @Test
-    void successArtworkCommentTest() throws Exception {
-        //given
+    @BeforeEach
+    void setUp() {
         galleryMember = memberRepository.save(Member.builder()
                 .nickname("gallery Writer")
                 .email("gallery@gmail.com")
@@ -92,15 +92,19 @@ public class PostCommentTest {
                 .role(Role.USER)
                 .status(MemberStatus.ACTIVE)
                 .build());
+    }
 
+    @DisplayName("정상적인 작품 댓글 등록이 성공한다.")
+    @Test
+    void successArtworkCommentTest() throws Exception {
+        //given
         jwt = jwtTokenizer.testJwtGenerator(commentMember);
-
-        //when
         CommentRequestDto commentRequestDto = CommentRequestDto.builder()
                 .content("comment content")
                 .build();
         String body = gson.toJson(commentRequestDto);
 
+        //when
         ResultActions actions = mockMvc.perform(
                 post("/galleries/{gallery-id}/artworks/{artwork-id}/comments",
                         savedGallery.getGalleryId(),
@@ -108,15 +112,118 @@ public class PostCommentTest {
                         .header("Authorization", jwt)
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
         );
 
         //then
         actions.andExpect(status().isCreated())
-                .andExpect(jsonPath("$.galleryId").value(savedGallery.getGalleryId()));
+                .andExpect(jsonPath("$.galleryId").value(savedGallery.getGalleryId()))
+                .andExpect(jsonPath("$.commentList.memberId").value(commentMember.getMemberId()))
+                .andExpect(jsonPath("$.commentList.content").value("comment content"));
+    }
+
+    @DisplayName("내용이 없으면 등록에 실패한다.")
+    @Test
+    void nullContentTest() throws Exception {
+        //given
+        jwt = jwtTokenizer.testJwtGenerator(commentMember);
+        CommentRequestDto commentRequestDto = CommentRequestDto.builder()
+                .build();
+        String body = gson.toJson(commentRequestDto);
+
+
+        //when
+        ResultActions actions = mockMvc.perform(
+                post("/galleries/{gallery-id}/artworks/{artwork-id}/comments",
+                        savedGallery.getGalleryId(),
+                        savedArtwork.getArtworkId())
+                        .header("Authorization", jwt)
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        );
+
+        //then
+        actions.andExpect(status().isBadRequest());
+    }
+    @DisplayName("내용이 빈칸이면 등록에 실패한다.")
+    @Test
+    void blankContentTest() throws Exception {
+        //given
+        jwt = jwtTokenizer.testJwtGenerator(commentMember);
+        CommentRequestDto commentRequestDto = CommentRequestDto.builder()
+                .content(" ")
+                .build();
+        String body = gson.toJson(commentRequestDto);
+
+
+        //when
+        ResultActions actions = mockMvc.perform(
+                post("/galleries/{gallery-id}/artworks/{artwork-id}/comments",
+                        savedGallery.getGalleryId(),
+                        savedArtwork.getArtworkId())
+                        .header("Authorization", jwt)
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        );
+
+        //then
+        actions.andExpect(status().isBadRequest());
+    }
+    @DisplayName("JWT가 없으면 실패한다.")
+    @Test
+    void noJWTTest() throws Exception {
+        //given
+        CommentRequestDto commentRequestDto = CommentRequestDto.builder()
+                .content("comment content")
+                .build();
+        String body = gson.toJson(commentRequestDto);
+
+
+        //when
+        ResultActions actions = mockMvc.perform(
+                post("/galleries/{gallery-id}/artworks/{artwork-id}/comments",
+                        savedGallery.getGalleryId(),
+                        savedArtwork.getArtworkId())
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        );
+
+        //then
+        actions.andExpect(status().isUnauthorized());
+    }
+    @DisplayName("없는 작품에 댓글 등록이 안된다.")
+    @Test
+    void notExistArtworkTest() throws Exception {
+        //given
+        CommentRequestDto commentRequestDto = CommentRequestDto.builder()
+                .content("comment content")
+                .build();
+        String body = gson.toJson(commentRequestDto);
+        jwt = jwtTokenizer.testJwtGenerator(commentMember);
+
+
+        //when
+        ResultActions actions = mockMvc.perform(
+                post("/galleries/{gallery-id}/artworks/{artwork-id}/comments",
+                        savedGallery.getGalleryId(),
+                        999999L)
+                        .header("Authorization", jwt)
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        );
+
+        //then
+        actions.andExpect(jsonPath("$.status").value(ExceptionCode.ARTWORK_NOT_FOUND.getStatus()))
+                .andExpect(jsonPath("$.exception").value(ExceptionCode.ARTWORK_NOT_FOUND.name()));
+
     }
 
 
+    //
 
 
 
@@ -137,7 +244,7 @@ public class PostCommentTest {
 
 
 
-
+//
 
 }
 
