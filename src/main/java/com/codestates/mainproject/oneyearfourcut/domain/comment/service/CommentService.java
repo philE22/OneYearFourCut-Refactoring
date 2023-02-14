@@ -93,7 +93,7 @@ public class CommentService {
 
         /* 댓글 리스트가 없을 경우 빈 배열로 응답하는 게 아니었나요?? */
         if (commentPage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "댓글이 아직 없습니다.");
+            throw new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND);
         }
 
         PageInfo<Object> pageInfo = new PageInfo<>(page, size, (int) commentPage.getTotalElements(), commentPage.getTotalPages());
@@ -112,7 +112,7 @@ public class CommentService {
 
         /* 댓글 리스트가 없을 경우 빈 배열로 응답하는 게 아니었나요?? */
         if (commentPage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "댓글이 아직 없습니다.");
+            throw new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND);
         }
 
         PageInfo<Object> pageInfo = new PageInfo<>(page, size, (int) commentPage.getTotalElements(), commentPage.getTotalPages());
