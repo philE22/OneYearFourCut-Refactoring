@@ -28,7 +28,6 @@ import static com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Ga
 public class GalleryService {
     private final GalleryRepository galleryRepository;
     private final MemberService memberService;
-    private final FollowRepository followRepository;
 
     public GalleryPostResponseDto createGallery(GalleryRequestDto galleryRequestDto, Long memberId) {
         // 오픈된 전시관이 이미 존재하는지 확인하고 있으면 에러

@@ -43,9 +43,9 @@ public class GalleryController {
     @PatchMapping("/me")
     public ResponseEntity patchGallery(@Valid @RequestBody GalleryPatchDto galleryPatchDto,
                                        @LoginMember Long memberId) {
-        galleryService.modifyGallery(galleryPatchDto, memberId);
+        GalleryResponseDto galleryResponseDto = galleryService.modifyGallery(galleryPatchDto, memberId);
 
-        return new ResponseEntity("전시관 수정 성공", HttpStatus.OK);
+        return new ResponseEntity(galleryResponseDto, HttpStatus.OK);
     }
 
 //    전시관 폐쇄
@@ -53,7 +53,7 @@ public class GalleryController {
     public ResponseEntity deleteGallery(@LoginMember Long memberId) {
         galleryService.deleteGallery(memberId);
 
-        return new ResponseEntity("전시관 삭제 성공", HttpStatus.NO_CONTENT);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
 }
