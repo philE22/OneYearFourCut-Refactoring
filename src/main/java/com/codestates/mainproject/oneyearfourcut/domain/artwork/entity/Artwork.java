@@ -8,8 +8,11 @@ import com.codestates.mainproject.oneyearfourcut.domain.artwork.dto.ArtworkRespo
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.dto.OneYearFourCutResponseDto;
 import com.codestates.mainproject.oneyearfourcut.domain.comment.entity.Comment;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
+import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
 import com.codestates.mainproject.oneyearfourcut.global.auditable.Auditable;
+import com.codestates.mainproject.oneyearfourcut.global.exception.exception.BusinessLogicException;
+import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -63,16 +66,43 @@ public class Artwork extends Auditable {
     @OneToMany(mappedBy = "artwork", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> commentList = new ArrayList<>();
 
+    public void modify(Artwork artwork) {
+        Optional.ofNullable(artwork.getImagePath())
+                .ifPresent(imagePath -> this.imagePath = imagePath);
+        Optional.ofNullable(artwork.getTitle())
+                .ifPresent(title -> this.title = title);
+        Optional.ofNullable(artwork.getContent())
+                .ifPresent(content -> this.content = content);
+    }
+    public boolean isInOpenGallery() {
+        return this.getGallery().getStatus() == GalleryStatus.OPEN;
+    }
+    public boolean isCorrectGallery(long galleryId) {
+        return this.getGallery().getGalleryId() == galleryId;
+    }
+    public void setMemberLike(long memberId) {
+        if (memberId != -1) {
+            this.getArtworkLikeList().stream()
+                    .forEach(artworkLike -> {
+                        if (artworkLike.getMember().getMemberId() == memberId) {
+                            this.liked = true;
+                        }
+                    });
+        }
+    }
+
+    public boolean isArtworkOwner(long artworkMemberId) {
+        return this.getMember().getMemberId() == artworkMemberId;
+    }
+    public boolean isGalleryOwner(long galleryMemberId) {
+        return this.getGallery().getMember().getMemberId() == galleryMemberId;
+    }
+
     /* ################### Getter ################### */
     public Long getMemberId() {
         return this.member.getMemberId();
     }
-    public int getLikeCount() {
-        return this.likeCount;
-    }
-    public int getCommentCount() {
-        return this.commentCount;
-    }
+
     /* ################### Setter ################### */
     public void setGallery(Gallery gallery) {
         if (this.gallery != null) {
@@ -91,41 +121,17 @@ public class Artwork extends Auditable {
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
     }
-    public void setLiked(boolean liked) {
-        this.liked = liked;
-    }
-    public void modify(Artwork artwork) {
-        Optional.ofNullable(artwork.getImagePath())
-                .ifPresent(imagePath -> this.imagePath = imagePath);
-        Optional.ofNullable(artwork.getTitle())
-                .ifPresent(title -> this.title = title);
-        Optional.ofNullable(artwork.getContent())
-                .ifPresent(content -> this.content = content);
-    }
+
     /* ################### 생성자 ################### */
+
     @Builder
     public Artwork(String title, String content, MultipartFile image) {
         this.title = title;
         this.content = content;
         this.image = image;
     }
-
-    // 기본 Test용 생성자
-    public Artwork(Long artworkId) {
-        this.artworkId = artworkId;
-        this.title = "test_title";
-        this.content = "test_content";
-        this.imagePath = "/";
-        super.createdAt = LocalDateTime.now();
-    }
-    // RepositoryTest용 생성자
-    public Artwork(Long artworkId, int likeCount) {
-        this(artworkId);
-        // 테스트할 때 필요한 데이터
-        this.likeCount = likeCount;
-    }
-
     /* ################### toDto ################### */
+
     public ArtworkResponseDto toArtworkResponseDto() {
         return ArtworkResponseDto.builder()
                 .artworkId(getArtworkId())
@@ -139,7 +145,6 @@ public class Artwork extends Auditable {
                 .commentCount(getCommentCount())
                 .build();
     }
-
     public OneYearFourCutResponseDto toOneYearFourCutResponseDto() {
         return OneYearFourCutResponseDto.builder()
                 .artworkId(getArtworkId())
@@ -147,6 +152,7 @@ public class Artwork extends Auditable {
                 .likeCount(getLikeCount())
                 .build();
     }
+
     public AlarmEvent toAlarmEvent(Long receiverId) {
         return AlarmEvent.builder()
                 .receiverId(receiverId)

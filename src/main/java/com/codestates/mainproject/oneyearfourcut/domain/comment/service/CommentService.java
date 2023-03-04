@@ -63,7 +63,7 @@ public class CommentService {
     public CommentArtworkHeadDto<Object> createCommentOnArtwork(CommentRequestDto commentRequestDto, Long galleryId, Long artworkId, Long memberId) {
         Member member = memberService.findMember(memberId);
         Gallery gallery = galleryService.findGallery(galleryId);
-        Artwork artwork = artworkService.findVerifiedArtwork(galleryId, artworkId);
+        Artwork artwork = artworkService.findArtwork(artworkId);
 
         Comment comment = commentRequestDto.toCommentEntity();
         comment.setMember(member);

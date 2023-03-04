@@ -1,8 +1,5 @@
 package com.codestates.mainproject.oneyearfourcut.domain.artwork.service;
 
-import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.ArtworkLike;
-import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.LikeStatus;
-import com.codestates.mainproject.oneyearfourcut.domain.Like.repository.ArtworkLikeRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.alarm.event.AlarmEventPublisher;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.dto.ArtworkPatchDto;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.dto.ArtworkPostDto;
@@ -10,12 +7,10 @@ import com.codestates.mainproject.oneyearfourcut.domain.artwork.dto.ArtworkRespo
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.dto.OneYearFourCutResponseDto;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.entity.Artwork;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.repository.ArtworkRepository;
-import com.codestates.mainproject.oneyearfourcut.domain.comment.entity.Comment;
-import com.codestates.mainproject.oneyearfourcut.domain.comment.repository.CommentRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
+import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.service.GalleryService;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
-import com.codestates.mainproject.oneyearfourcut.domain.member.service.MemberService;
 import com.codestates.mainproject.oneyearfourcut.global.aws.service.AwsS3Service;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.BusinessLogicException;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
@@ -27,8 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.domain.Sort.Order.desc;
 
@@ -37,15 +32,57 @@ import static org.springframework.data.domain.Sort.Order.desc;
 @Transactional(readOnly = true)
 @Slf4j
 public class ArtworkService {
-
     private final ArtworkRepository artworkRepository;
     private final GalleryService galleryService;
-
-    private final MemberService memberService;
-    private final ArtworkLikeRepository artworkLikeRepository;
     private final AwsS3Service awsS3Service;
     private final AlarmEventPublisher alarmEventPublisher;
 
+    public Artwork findArtwork(long artworkId) {
+        Optional<Artwork> artworkOptional = artworkRepository.findById(artworkId);
+
+        return artworkOptional.orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.ARTWORK_NOT_FOUND));
+    }
+
+    public Artwork findGalleryVerifiedArtwork(long galleryId, long artworkId) {
+        Artwork foundArtwork = findArtwork(artworkId);
+
+        if (!foundArtwork.isInOpenGallery()) {
+            throw new BusinessLogicException(ExceptionCode.CLOSED_GALLERY);
+        }
+
+        if (!foundArtwork.isCorrectGallery(galleryId)) {
+            throw new BusinessLogicException(ExceptionCode.ARTWORK_NOT_FOUND_FROM_GALLERY);
+        }
+
+
+        return foundArtwork;
+    }
+
+    public void checkGalleryArtworkVerification(Long galleryId, Long artworkId) {
+        Optional<Artwork> artwork = artworkRepository.findById(artworkId);
+        Artwork foundArtwork = artwork.orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.ARTWORK_NOT_FOUND));
+
+        Gallery gallery = foundArtwork.getGallery();
+        if (galleryId != gallery.getGalleryId()) {
+            throw new BusinessLogicException(ExceptionCode.ARTWORK_NOT_FOUND_FROM_GALLERY);
+        }
+        if (gallery.getStatus() == GalleryStatus.CLOSED) {
+            throw new BusinessLogicException(ExceptionCode.CLOSED_GALLERY);
+        }
+    }
+
+    public List<Artwork> findArtworkList(long galleryId) {
+        galleryService.verifiedGalleryExist(galleryId);
+
+        List<Artwork> artworkList = artworkRepository.findAllByGallery_GalleryId(galleryId,
+                Sort.by(desc("createdAt")));
+
+        return artworkList;
+    }
+
+    //==============================Artwork Controller 용 CRUD==============================//
     @Transactional
     public ArtworkResponseDto createArtwork(long memberId, long galleryId, ArtworkPostDto requestDto) {
         Gallery findGallery = galleryService.findGallery(galleryId);
@@ -54,11 +91,12 @@ public class ArtworkService {
         if (artwork.getImage() == null) {
             throw new BusinessLogicException(ExceptionCode.IMAGE_NOT_FOUND_FROM_REQUEST);
         }
+        String imageRoot = awsS3Service.uploadFile(artwork.getImage());
+
         artwork.setGallery(new Gallery(galleryId));
         artwork.setMember(new Member(memberId));
-
-        String imageRoot = awsS3Service.uploadFile(artwork.getImage());
         artwork.setImagePath(imageRoot);
+
         Artwork savedArtwork = artworkRepository.save(artwork);
 
         //알람 생성
@@ -68,99 +106,64 @@ public class ArtworkService {
         return savedArtwork.toArtworkResponseDto();
     }
 
-    public ArtworkResponseDto findArtwork(long memberId, long galleryId, long artworkId) {
-        galleryService.verifiedGalleryExist(galleryId);
+    public ArtworkResponseDto findArtworkResponseDto(long memberId, long galleryId, long artworkId) {
+        Artwork foundArtwork = findGalleryVerifiedArtwork(galleryId, artworkId);
 
-        Artwork verifiedArtwork = findVerifiedArtwork(galleryId, artworkId);
-
-        if (memberId != -1) {
-            boolean isLiked =
-                    artworkLikeRepository.existsByMember_MemberIdAndArtwork_ArtworkIdAndStatus(memberId, artworkId, LikeStatus.LIKE);
-            verifiedArtwork.setLiked(isLiked);
-        }
-        return verifiedArtwork.toArtworkResponseDto();
+        foundArtwork.setMemberLike(memberId);
+        return foundArtwork.toArtworkResponseDto();
     }
 
-    public List<ArtworkResponseDto> findArtworkList(long memberId, long galleryId) {
-        galleryService.verifiedGalleryExist(galleryId);
-
-        List<Artwork> artworkList = artworkRepository.findAllByGallery_GalleryId(galleryId,
-                Sort.by(desc("createdAt")));
+    public List<ArtworkResponseDto> findArtworkResponseDtoList(long memberId, long galleryId) {
+        List<Artwork> artworkList = findArtworkList(galleryId);
 
         if (memberId != -1) {
-            Member loginMember = memberService.findMember(memberId);
-            List<ArtworkLike> memberLikeList = loginMember.getArtworkLikeList();
-            memberLikeList.
-                    stream().filter(like -> like.getStatus().equals(LikeStatus.LIKE)).
-                    forEach(like -> like.getArtwork()
-                            .setLiked(artworkList.contains(like.getArtwork())));
+            artworkList.stream()
+                    .forEach(artwork -> artwork.setMemberLike(memberId));
         }
-        return ArtworkResponseDto.toListResponse(artworkList);
-    }
 
+        return artworkList.stream()
+                .map(Artwork::toArtworkResponseDto)
+                .collect(Collectors.toList());
+    }
     public List<OneYearFourCutResponseDto> findOneYearFourCut(long galleryId) {
         galleryService.verifiedGalleryExist(galleryId);
 
         List<Artwork> findArtworkList = artworkRepository.findTop4ByGallery_GalleryId(galleryId,
                 Sort.by(desc("likeCount"), desc("createdAt")));
 
-        return OneYearFourCutResponseDto.toListResponse(findArtworkList);
+        return findArtworkList.stream()
+                .map(Artwork::toOneYearFourCutResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public ArtworkResponseDto updateArtwork(long memberId, long galleryId, long artworkId, ArtworkPatchDto requestDto) {
-        galleryService.verifiedGalleryExist(galleryId);
-        Artwork findArtwork = findVerifiedArtwork(galleryId, artworkId);
-        if (memberId != findArtwork.getMemberId()) {
+        Artwork foundArtwork = findGalleryVerifiedArtwork(galleryId, artworkId);
+
+        if (!foundArtwork.isArtworkOwner(memberId)) {
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
         }
+
         Artwork request = requestDto.toEntity();
         Optional<MultipartFile> image = Optional.ofNullable(request.getImage());
         if (image.isPresent()) {
             String s3Path = awsS3Service.uploadFile(image.get());
-            awsS3Service.deleteImage(findArtwork.getImagePath());
+            awsS3Service.deleteImage(foundArtwork.getImagePath());
             request.setImagePath(s3Path);
         }
-        findArtwork.modify(request);
-        return findArtwork.toArtworkResponseDto();
+        foundArtwork.modify(request);
+        return foundArtwork.toArtworkResponseDto();
     }
     @Transactional
     public void deleteArtwork(long memberId, long galleryId, long artworkId) {
-        galleryService.verifiedGalleryExist(galleryId);
-        Artwork foundArtwork = findVerifiedArtwork(galleryId, artworkId);
+        Artwork foundArtwork = findGalleryVerifiedArtwork(galleryId, artworkId);
 
-        boolean isWriter = foundArtwork.getMemberId() == memberId;
-        boolean isAdmin = foundArtwork.getGallery().getMember().getMemberId() == memberId;
-        if (!(isWriter || isAdmin)) { // 둘 다 false일 경우 권한 없음
+        if (!foundArtwork.isArtworkOwner(memberId) && !foundArtwork.isGalleryOwner(memberId)) {
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
         }
 
         awsS3Service.deleteImage(foundArtwork.getImagePath());
         artworkRepository.delete(foundArtwork);
-    }
-
-    // ================= 검증 관련 메서드 =================
-    public Artwork findVerifiedArtwork(long galleryId, long artworkId) {
-        Optional<Artwork> artworkOptional = artworkRepository.findById(artworkId);
-
-        Artwork findArtwork = artworkOptional.orElseThrow(
-                () -> new BusinessLogicException(ExceptionCode.ARTWORK_NOT_FOUND));
-
-        if (galleryId != findArtwork.getGallery().getGalleryId()) {
-            throw new BusinessLogicException(ExceptionCode.ARTWORK_NOT_FOUND_FROM_GALLERY);
-        }
-
-        return findArtwork;
-    }
-
-    public void checkGalleryArtworkVerification(Long galleryId, Long artworkId) {
-        Optional<Artwork> artwork = artworkRepository.findById(artworkId);
-        Artwork foundArtwork = artwork.orElseThrow(
-                () -> new BusinessLogicException(ExceptionCode.ARTWORK_NOT_FOUND));
-
-        if ((!Objects.equals(galleryId, foundArtwork.getGallery().getGalleryId()))) {
-            throw new BusinessLogicException(ExceptionCode.ARTWORK_NOT_FOUND_FROM_GALLERY);
-        }
     }
 }
 

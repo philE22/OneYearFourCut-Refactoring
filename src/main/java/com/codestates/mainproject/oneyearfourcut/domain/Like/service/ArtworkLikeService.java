@@ -3,10 +3,7 @@ package com.codestates.mainproject.oneyearfourcut.domain.Like.service;
 import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.ArtworkLike;
 import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.LikeStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.Like.repository.ArtworkLikeRepository;
-import com.codestates.mainproject.oneyearfourcut.domain.alarm.entity.AlarmType;
-import com.codestates.mainproject.oneyearfourcut.domain.alarm.event.AlarmEvent;
 import com.codestates.mainproject.oneyearfourcut.domain.alarm.event.AlarmEventPublisher;
-import com.codestates.mainproject.oneyearfourcut.domain.alarm.service.AlarmService;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.entity.Artwork;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.service.ArtworkService;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
@@ -31,7 +28,7 @@ public class ArtworkLikeService {
 
     public void updateArtworkLike(long memberId, long galleryId, long artworkId) {
         Member findMember = memberService.findMember(memberId);
-        Artwork findArtwork = artworkService.findVerifiedArtwork(galleryId, artworkId);
+        Artwork findArtwork = artworkService.findGalleryVerifiedArtwork(galleryId, artworkId);
 
         Optional<ArtworkLike> likeOptional = artworkLikeRepository.findByMemberAndArtwork(findMember, findArtwork);
         likeOptional.ifPresentOrElse(

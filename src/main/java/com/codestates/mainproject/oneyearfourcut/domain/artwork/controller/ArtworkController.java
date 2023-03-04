@@ -7,8 +7,6 @@ import com.codestates.mainproject.oneyearfourcut.domain.artwork.dto.ArtworkRespo
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.dto.OneYearFourCutResponseDto;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.service.ArtworkService;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.LoginMember;
-import com.codestates.mainproject.oneyearfourcut.global.exception.exception.BusinessLogicException;
-import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +38,7 @@ public class ArtworkController {
     @GetMapping("/{gallery-id}/artworks")
     public ResponseEntity<?> getArtworks(@LoginMember Long memberId,
                                          @Positive @PathVariable("gallery-id") long galleryId) {
-
-        List<ArtworkResponseDto> response = artworkService.findArtworkList(memberId, galleryId);
+        List<ArtworkResponseDto> response = artworkService.findArtworkResponseDtoList(memberId, galleryId);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -51,8 +48,7 @@ public class ArtworkController {
     public ResponseEntity<?> getArtwork(@LoginMember Long memberId,
                                         @Positive @PathVariable("gallery-id") long galleryId,
                                         @Positive @PathVariable("artwork-id") long artworkId) {
-
-        ArtworkResponseDto response = artworkService.findArtwork(memberId, galleryId, artworkId);
+        ArtworkResponseDto response = artworkService.findArtworkResponseDto(memberId, galleryId, artworkId);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -63,15 +59,14 @@ public class ArtworkController {
                                           @Positive @PathVariable("gallery-id") long galleryId,
                                           @Positive @PathVariable("artwork-id") long artworkId,
                                           @Valid @ModelAttribute ArtworkPatchDto request) {
-
         ArtworkResponseDto response = artworkService.updateArtwork(memberId, galleryId, artworkId, request);
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // 올해네컷 조회
     @GetMapping("/{gallery-id}/artworks/like")
     public ResponseEntity<?> getOneYearFourCut(@Positive @PathVariable("gallery-id") long galleryId) {
-
         List<OneYearFourCutResponseDto> response = artworkService.findOneYearFourCut(galleryId);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -84,7 +79,6 @@ public class ArtworkController {
     public ResponseEntity<?> deleteArtwork(@LoginMember Long memberId,
                                            @Positive @PathVariable("gallery-id") long galleryId,
                                            @Positive @PathVariable("artwork-id") long artworkId) {
-
         artworkService.deleteArtwork(memberId, galleryId, artworkId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
