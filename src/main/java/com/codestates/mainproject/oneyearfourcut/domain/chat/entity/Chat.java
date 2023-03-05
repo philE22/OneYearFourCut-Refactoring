@@ -4,6 +4,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.chat.dto.ChatResponseDto
 import com.codestates.mainproject.oneyearfourcut.domain.chatroom.entity.ChatRoom;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
 import com.codestates.mainproject.oneyearfourcut.global.auditable.Auditable;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Chat extends Auditable {
 
     @Id

@@ -108,8 +108,8 @@ public class ArtworkService {
 
     public ArtworkResponseDto findArtworkResponseDto(long memberId, long galleryId, long artworkId) {
         Artwork foundArtwork = findGalleryVerifiedArtwork(galleryId, artworkId);
-
         foundArtwork.setMemberLike(memberId);
+
         return foundArtwork.toArtworkResponseDto();
     }
 

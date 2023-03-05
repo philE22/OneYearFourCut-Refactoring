@@ -7,6 +7,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.follow.dto.FollowerRespo
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
 import com.codestates.mainproject.oneyearfourcut.global.auditable.Auditable;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,8 +16,8 @@ import org.hibernate.annotations.Formula;
 import javax.persistence.*;
 
 @Getter
-@NoArgsConstructor
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Follow extends Auditable {
 
     @Id
@@ -67,7 +68,7 @@ public class Follow extends Auditable {
                 .build();
     }
     public FollowerResponseDto toFollowerResponseDto(){
-        Gallery openFollowerGallery = this.getMember().getOpenGallery().orElse(new Gallery());
+        Gallery openFollowerGallery = this.getMember().getOpenGallery().orElse(new Gallery(null));
         return FollowerResponseDto.builder()
                 .followId(this.getFollowId())
                 .galleryId(openFollowerGallery.getGalleryId())

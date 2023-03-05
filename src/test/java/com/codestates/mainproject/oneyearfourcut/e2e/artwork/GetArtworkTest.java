@@ -1,7 +1,6 @@
 package com.codestates.mainproject.oneyearfourcut.e2e.artwork;
 
 import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.ArtworkLike;
-import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.LikeStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.Like.repository.ArtworkLikeRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.entity.Artwork;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.repository.ArtworkRepository;
@@ -87,11 +86,12 @@ public class GetArtworkTest {
         savedArtwork = artworkRepository.save(artwork);
 
         //전시회 주인이 작품에 좋아요 누름
-        ArtworkLike like = new ArtworkLike();
-        like.setArtwork(savedArtwork);
-        like.setMember(galleryMember);
-        like.setStatus(LikeStatus.LIKE);
-        artworkLikeRepository.save(like);
+        artworkLikeRepository.save(
+                ArtworkLike.builder()
+                        .artwork(savedArtwork)
+                        .member(galleryMember)
+                        .build()
+        );
     }
 
     @DisplayName("로그인 회원 조회: 좋아요 여부와 함께 조회")

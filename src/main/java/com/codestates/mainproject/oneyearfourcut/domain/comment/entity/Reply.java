@@ -10,8 +10,8 @@ import lombok.*;
 import javax.persistence.*;
 
 @Getter
-@NoArgsConstructor
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reply extends Auditable {
 
     @Id

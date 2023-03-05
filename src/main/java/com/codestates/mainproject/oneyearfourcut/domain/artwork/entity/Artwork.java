@@ -11,8 +11,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
 import com.codestates.mainproject.oneyearfourcut.global.auditable.Auditable;
-import com.codestates.mainproject.oneyearfourcut.global.exception.exception.BusinessLogicException;
-import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +26,7 @@ import java.util.Optional;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Artwork extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -134,15 +133,15 @@ public class Artwork extends Auditable {
 
     public ArtworkResponseDto toArtworkResponseDto() {
         return ArtworkResponseDto.builder()
-                .artworkId(getArtworkId())
+                .artworkId(artworkId)
                 .memberId(getMemberId())
                 .nickName(member.getNickname())
-                .title(getTitle())
-                .content(getContent())
-                .imagePath(getImagePath())
-                .likeCount(getLikeCount())
-                .liked(isLiked())
-                .commentCount(getCommentCount())
+                .title(title)
+                .content(content)
+                .imagePath(imagePath)
+                .likeCount(likeCount)
+                .liked(liked)
+                .commentCount(commentCount)
                 .build();
     }
     public OneYearFourCutResponseDto toOneYearFourCutResponseDto() {

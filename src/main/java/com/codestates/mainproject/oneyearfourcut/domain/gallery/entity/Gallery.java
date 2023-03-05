@@ -19,8 +19,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter //테스트코드에서 gallery객체 만들때 setter 사용하는 분이 있어서 등록. 나중에 제거예정
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Gallery extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

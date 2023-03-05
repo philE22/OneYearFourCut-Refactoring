@@ -108,10 +108,11 @@ public class GetArtworksTest {
             artwork.setImagePath("/path" + i);
             Artwork savedArtwork = artworkRepository.save(artwork);
             if (i < 2) {
-                ArtworkLike like = new ArtworkLike();
-                like.setArtwork(savedArtwork);
-                like.setMember(artworkMember);
-                artworkLikeRepository.save(like);
+                artworkLikeRepository.save(
+                        ArtworkLike.builder()
+                                .artwork(savedArtwork)
+                                .member(artworkMember)
+                                .build());
             }
         }
 
@@ -147,10 +148,12 @@ public class GetArtworksTest {
             artwork.setImagePath("/path" + i);
             Artwork savedArtwork = artworkRepository.save(artwork);
 
-            ArtworkLike like = new ArtworkLike();
-            like.setArtwork(savedArtwork);
-            like.setMember(artworkMember);
-            artworkLikeRepository.save(like);
+            artworkLikeRepository.save(
+                    ArtworkLike.builder()
+                            .artwork(savedArtwork)
+                            .member(artworkMember)
+                            .build()
+            );
         }
 
 

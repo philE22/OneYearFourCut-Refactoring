@@ -126,11 +126,11 @@ public class PutArtworkLikeTest {
         //given
         String jwt = jwtTokenizer.testJwtGenerator(likeMember);
 
-        ArtworkLike firstLike = new ArtworkLike();
-        firstLike.setArtwork(savedArtwork);
-        firstLike.setMember(likeMember);
-        firstLike.setStatus(LikeStatus.LIKE);
-        ArtworkLike savedLike = artworkLikeRepository.save(firstLike);
+        ArtworkLike savedLike =
+                artworkLikeRepository.save(ArtworkLike.builder()
+                        .member(likeMember)
+                        .artwork(savedArtwork)
+                        .build());
 
         //when
         ResultActions actions = mockMvc.perform(

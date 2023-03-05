@@ -33,7 +33,7 @@ public class ArtworkLikeService {
         Optional<ArtworkLike> likeOptional = artworkLikeRepository.findByMemberAndArtwork(findMember, findArtwork);
         likeOptional.ifPresentOrElse(
                 like -> {
-                    if (like.getStatus().equals(LikeStatus.LIKE)){
+                    if (like.getStatus().equals(LikeStatus.LIKE)) {
                         like.setStatus(LikeStatus.CANCEL);
                     } else {
                         like.setStatus(LikeStatus.LIKE);
@@ -54,10 +54,11 @@ public class ArtworkLikeService {
                     }
                 },
                 () -> { //좋아요가 처음 눌릴 때
-                    ArtworkLike artworkLike = new ArtworkLike();
-                    artworkLike.setMember(findMember);
-                    artworkLike.setArtwork(findArtwork);
-                    ArtworkLike savedArtworkLike = artworkLikeRepository.save(artworkLike);
+                    ArtworkLike savedArtworkLike =
+                            artworkLikeRepository.save(ArtworkLike.builder()
+                            .member(findMember)
+                            .artwork(findArtwork)
+                            .build());
 
                     //전시관 주인 알람 생성
                     Long galleryReceiverId = findArtwork.getGallery().getMember().getMemberId();

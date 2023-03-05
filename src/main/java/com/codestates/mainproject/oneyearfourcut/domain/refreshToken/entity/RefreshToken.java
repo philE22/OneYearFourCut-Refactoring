@@ -2,6 +2,7 @@ package com.codestates.mainproject.oneyearfourcut.domain.refreshToken.entity;
 
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
 import com.codestates.mainproject.oneyearfourcut.global.auditable.Auditable;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

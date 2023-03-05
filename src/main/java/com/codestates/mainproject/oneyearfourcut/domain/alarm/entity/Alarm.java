@@ -3,19 +3,14 @@ package com.codestates.mainproject.oneyearfourcut.domain.alarm.entity;
 import com.codestates.mainproject.oneyearfourcut.domain.alarm.dto.AlarmResponseDto;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
 import com.codestates.mainproject.oneyearfourcut.global.auditable.Auditable;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Getter
-@NoArgsConstructor
 @Entity
-@Builder
-@AllArgsConstructor
 @Table(name = "alarm")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Alarm extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +36,16 @@ public class Alarm extends Auditable {
 
     @Column
     private Long galleryId;
+
+    @Builder
+    public Alarm(Member member, Boolean readCheck, AlarmType alarmType, Long senderId, Long artworkId, Long galleryId) {
+        this.member = member;
+        this.readCheck = readCheck;
+        this.alarmType = alarmType;
+        this.senderId = senderId;
+        this.artworkId = artworkId;
+        this.galleryId = galleryId;
+    }
 
     public AlarmResponseDto toAlarmResponseDto(String nickname, String title) {
         return AlarmResponseDto.builder()

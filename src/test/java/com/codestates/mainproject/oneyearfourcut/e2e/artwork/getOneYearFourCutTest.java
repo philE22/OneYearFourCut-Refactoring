@@ -119,44 +119,44 @@ public class getOneYearFourCutTest {
 
         //작품에 따른 좋아요 등록
         for (int i = 0; i < 4; i++) {
-            ArtworkLike like = new ArtworkLike();
-            like.setStatus(LikeStatus.LIKE);
-            like.setArtwork(savedArtworkList.get(0));
-            like.setMember(likeMemberList.get(i));
-
-            artworkLikeRepository.save(like);
+            artworkLikeRepository.save(
+                    ArtworkLike.builder()
+                            .artwork(savedArtworkList.get(0))
+                            .member(likeMemberList.get(i))
+                            .build()
+            );
         }
         for (int i = 0; i < 3; i++) {
-            ArtworkLike like = new ArtworkLike();
-            like.setStatus(LikeStatus.LIKE);
-            like.setArtwork(savedArtworkList.get(1));
-            like.setMember(likeMemberList.get(i));
-
-            artworkLikeRepository.save(like);
+            artworkLikeRepository.save(
+                    ArtworkLike.builder()
+                            .artwork(savedArtworkList.get(1))
+                            .member(likeMemberList.get(i))
+                            .build()
+            );
         }
         for (int i = 0; i < 2; i++) {
-            ArtworkLike like = new ArtworkLike();
-            like.setStatus(LikeStatus.LIKE);
-            like.setArtwork(savedArtworkList.get(4));
-            like.setMember(likeMemberList.get(i));
-
-            artworkLikeRepository.save(like);
+            artworkLikeRepository.save(
+                    ArtworkLike.builder()
+                            .artwork(savedArtworkList.get(4))
+                            .member(likeMemberList.get(i))
+                            .build()
+            );
         }
         for (int i = 0; i < 2; i++) {
-            ArtworkLike like = new ArtworkLike();
-            like.setStatus(LikeStatus.LIKE);
-            like.setArtwork(savedArtworkList.get(3));
-            like.setMember(likeMemberList.get(i));
-
-            artworkLikeRepository.save(like);
+            artworkLikeRepository.save(
+                    ArtworkLike.builder()
+                            .artwork(savedArtworkList.get(3))
+                            .member(likeMemberList.get(i))
+                            .build()
+            );
         }
         for (int i = 0; i < 2; i++) {
-            ArtworkLike like = new ArtworkLike();
-            like.setStatus(LikeStatus.LIKE);
-            like.setArtwork(savedArtworkList.get(2));
-            like.setMember(likeMemberList.get(i));
-
-            artworkLikeRepository.save(like);
+            artworkLikeRepository.save(
+                    ArtworkLike.builder()
+                            .artwork(savedArtworkList.get(2))
+                            .member(likeMemberList.get(i))
+                            .build()
+            );
         }
 
         //when
