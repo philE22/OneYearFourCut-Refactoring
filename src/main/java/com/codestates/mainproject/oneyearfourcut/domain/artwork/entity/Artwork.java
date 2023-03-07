@@ -90,11 +90,8 @@ public class Artwork extends Auditable {
         }
     }
 
-    public boolean isArtworkOwner(long artworkMemberId) {
+    public boolean isOwner(long artworkMemberId) {
         return this.getMember().getMemberId() == artworkMemberId;
-    }
-    public boolean isGalleryOwner(long galleryMemberId) {
-        return this.getGallery().getMember().getMemberId() == galleryMemberId;
     }
 
     /* ################### Getter ################### */

@@ -54,6 +54,9 @@ public class Gallery extends Auditable {
     public Gallery(Long galleryId) {
         this.galleryId = galleryId;
     }
+    public boolean isOwner(Long memberId) {
+        return this.getMember().getMemberId() == memberId;
+    }
 
     public void updateTitle(String title) {
         this.title = title;

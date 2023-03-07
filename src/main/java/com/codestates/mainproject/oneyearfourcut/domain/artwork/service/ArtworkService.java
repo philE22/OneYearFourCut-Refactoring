@@ -140,7 +140,7 @@ public class ArtworkService {
     public ArtworkResponseDto updateArtwork(long memberId, long galleryId, long artworkId, ArtworkPatchDto requestDto) {
         Artwork foundArtwork = findGalleryVerifiedArtwork(galleryId, artworkId);
 
-        if (!foundArtwork.isArtworkOwner(memberId)) {
+        if (!foundArtwork.isOwner(memberId)) {
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
         }
 
@@ -158,7 +158,7 @@ public class ArtworkService {
     public void deleteArtwork(long memberId, long galleryId, long artworkId) {
         Artwork foundArtwork = findGalleryVerifiedArtwork(galleryId, artworkId);
 
-        if (!foundArtwork.isArtworkOwner(memberId) && !foundArtwork.isGalleryOwner(memberId)) {
+        if (!foundArtwork.isOwner(memberId) && !foundArtwork.getGallery().isOwner(memberId)) {
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
         }
 

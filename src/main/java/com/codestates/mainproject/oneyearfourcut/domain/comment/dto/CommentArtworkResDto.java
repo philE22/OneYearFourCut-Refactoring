@@ -22,11 +22,4 @@ public class CommentArtworkResDto {
     private Long memberId;
     private String nickname;
     private String content;
-
-    public static List<CommentArtworkResDto>toCommentArtworkResponseDtoList(List<Comment> commentList){
-        return commentList == null ? Collections.emptyList() : commentList
-                        .stream()
-                        .map(Comment::toCommentArtworkResponseDto)
-                        .collect(Collectors.toList());
-    }
 }

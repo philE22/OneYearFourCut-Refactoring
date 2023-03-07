@@ -131,7 +131,7 @@ public class GetArtworkCommentTest {
 
 
     }
-    @DisplayName("댓글이 없으면 에러가 난다.")
+    @DisplayName("댓글이 없으면 빈 리스트가 조회된다.")
     @Test
     void noCommentTest() throws Exception {
         //given
@@ -146,8 +146,9 @@ public class GetArtworkCommentTest {
         );
 
         //then
-        actions.andExpect(jsonPath("$.status").value(ExceptionCode.COMMENT_NOT_FOUND.getStatus()))
-                .andExpect(jsonPath("$.exception").value(ExceptionCode.COMMENT_NOT_FOUND.name()));
+        actions.andExpect(jsonPath("$.commentList.length()").value(0))
+                .andExpect(jsonPath("$.pageInfo.totalElements").value(0))
+                .andExpect(jsonPath("$.artworkId").value(savedArtwork.getArtworkId()));
     }
     @DisplayName("없는 전시회의 댓글을 조회하면 에러가 난다.")
     @Test
@@ -156,7 +157,7 @@ public class GetArtworkCommentTest {
         //when
         ResultActions actions = mockMvc.perform(
                 get("/galleries/{gallery-id}/artworks/{artwork-id}/comments",
-                        savedGallery.getGalleryId(),
+                        Integer.MAX_VALUE,
                         savedArtwork.getArtworkId())
                         .param("page", "1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -164,7 +165,7 @@ public class GetArtworkCommentTest {
         );
 
         //then
-        actions.andExpect(jsonPath("$.status").value(ExceptionCode.COMMENT_NOT_FOUND.getStatus()))
-                .andExpect(jsonPath("$.exception").value(ExceptionCode.COMMENT_NOT_FOUND.name()));
+        actions.andExpect(jsonPath("$.status").value(ExceptionCode.ARTWORK_NOT_FOUND_FROM_GALLERY.getStatus()))
+                .andExpect(jsonPath("$.exception").value(ExceptionCode.ARTWORK_NOT_FOUND_FROM_GALLERY.name()));
     }
 }

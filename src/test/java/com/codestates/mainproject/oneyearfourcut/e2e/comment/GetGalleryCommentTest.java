@@ -131,7 +131,7 @@ public class GetGalleryCommentTest {
 
 
     }
-    @DisplayName("댓글이 없으면 에러가 난다.")
+    @DisplayName("댓글이 없으면 빈 리스트가 조회된다.")
     @Test
     void noCommentTest() throws Exception {
         //given
@@ -145,8 +145,9 @@ public class GetGalleryCommentTest {
         );
 
         //then
-        actions.andExpect(jsonPath("$.status").value(ExceptionCode.COMMENT_NOT_FOUND.getStatus()))
-                .andExpect(jsonPath("$.exception").value(ExceptionCode.COMMENT_NOT_FOUND.name()));
+        actions.andExpect(jsonPath("$.commentList.length()").value(0))
+                .andExpect(jsonPath("$.pageInfo.totalElements").value(0))
+                .andExpect(jsonPath("$.galleryId").value(savedGallery.getGalleryId()));
     }
     @DisplayName("없는 전시회의 댓글을 조회하면 에러가 난다.")
     @Test
@@ -162,7 +163,7 @@ public class GetGalleryCommentTest {
         );
 
         //then
-        actions.andExpect(jsonPath("$.status").value(ExceptionCode.COMMENT_NOT_FOUND.getStatus()))
-                .andExpect(jsonPath("$.exception").value(ExceptionCode.COMMENT_NOT_FOUND.name()));
+        actions.andExpect(jsonPath("$.status").value(ExceptionCode.GALLERY_NOT_FOUND.getStatus()))
+                .andExpect(jsonPath("$.exception").value(ExceptionCode.GALLERY_NOT_FOUND.name()));
     }
 }

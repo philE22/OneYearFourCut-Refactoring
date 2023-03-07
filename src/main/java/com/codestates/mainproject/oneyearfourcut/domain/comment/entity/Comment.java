@@ -48,14 +48,10 @@ public class Comment extends Auditable {
     public List<Reply> replyList = new ArrayList<>(); // 대댓글, targetEntity
 
 
-    public void changeContent(String content) {
-        this.content = content;
-    }
-
     /* Builder 및 생성자 */
+
     @Builder
-    public Comment(Long commentId, String content, Member member, Gallery gallery, Artwork artwork) {
-        this.commentId = commentId;
+    public Comment(String content, Member member, Gallery gallery, Artwork artwork) {
         this.content = content;
         this.member = member;
         this.gallery = gallery;
@@ -64,17 +60,7 @@ public class Comment extends Auditable {
     public Comment(Long commentId) {
         this.commentId = commentId;
     }
-
     /* Setter Getter */
-    public void setGallery(Gallery gallery) {
-        this.gallery = gallery;
-    }
-    public void setMember(Member member) {
-        this.member = member;
-    }
-    public void setArtwork(Artwork artwork) {
-        this.artwork = artwork;
-    }
 
     public Long getArtworkId() {
         if (this.artwork == null) {
@@ -87,6 +73,13 @@ public class Comment extends Auditable {
             return null;
         }
         return artwork.getImagePath();
+    }
+    public void changeContent(String content) {
+        this.content = content;
+    }
+
+    public boolean isOwner(Long memberId) {
+        return this.member.getMemberId() == memberId;
     }
 
     /* toDto */

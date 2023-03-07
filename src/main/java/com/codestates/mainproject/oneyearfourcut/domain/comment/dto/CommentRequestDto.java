@@ -1,7 +1,10 @@
 package com.codestates.mainproject.oneyearfourcut.domain.comment.dto;
 
+import com.codestates.mainproject.oneyearfourcut.domain.artwork.entity.Artwork;
 import com.codestates.mainproject.oneyearfourcut.domain.comment.entity.Comment;
 import com.codestates.mainproject.oneyearfourcut.domain.comment.entity.Reply;
+import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
 import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,9 +28,19 @@ public class CommentRequestDto {
         this.content = content;
     }
 
-    public Comment toCommentEntity(){
+    public Comment toCommentEntity(Member member, Gallery gallery){
         return Comment.builder()
                 .content(content)
+                .member(member)
+                .gallery(gallery)
+                .build();
+    }
+    public Comment toCommentEntity(Member member, Gallery gallery, Artwork artwork){
+        return Comment.builder()
+                .content(content)
+                .member(member)
+                .gallery(gallery)
+                .artwork(artwork)
                 .build();
     }
 
