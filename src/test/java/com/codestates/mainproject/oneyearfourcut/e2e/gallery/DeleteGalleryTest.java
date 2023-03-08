@@ -4,9 +4,12 @@ import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.repository.GalleryRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.MemberStatus;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,19 +42,29 @@ public class DeleteGalleryTest {
     @Autowired
     private JwtTokenizer jwtTokenizer;
 
+    private Member member;
+    @BeforeEach
+    void setUp() {
+        member = memberRepository.save(Member.builder()
+                .nickname("gallery Writer")
+                .email("gallery@gmail.com")
+                .profile("/path/gallery")
+                .role(Role.USER)
+                .status(MemberStatus.ACTIVE)
+                .build());
+    }
+
     @DisplayName("정상적인 삭제 요청은 성공한다")
     @Test
     void successDeleteTest() throws Exception {
         //given
-        Member member = memberRepository.findByEmail("test1@gmail.com").get();
-        Gallery gallery = Gallery.builder()
+        String jwt = jwtTokenizer.testJwtGenerator(member);
+        Gallery savedGallery = galleryRepository.save(Gallery.builder()
                 .title("원래 제목")
                 .content("원래 내용")
                 .member(member)
                 .status(GalleryStatus.OPEN)
-                .build();
-        Gallery savedGallery = galleryRepository.save(gallery);
-        String jwt = jwtTokenizer.testJwtGenerator(member);
+                .build());
 
         //when
         ResultActions actions = mockMvc.perform(
@@ -70,15 +83,13 @@ public class DeleteGalleryTest {
     @Test
     void closedDeleteTest() throws Exception {
         //given
-        Member member = memberRepository.findByEmail("test1@gmail.com").get();
-        Gallery gallery = Gallery.builder()
+        String jwt = jwtTokenizer.testJwtGenerator(member);
+        Gallery savedGallery = galleryRepository.save(Gallery.builder()
                 .title("원래 제목")
                 .content("원래 내용")
                 .member(member)
                 .status(GalleryStatus.CLOSED)
-                .build();
-        Gallery savedGallery = galleryRepository.save(gallery);
-        String jwt = jwtTokenizer.testJwtGenerator(member);
+                .build());
 
         //when
         ResultActions actions = mockMvc.perform(

@@ -4,6 +4,8 @@ import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.repository.GalleryRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.MemberStatus;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
@@ -39,10 +41,17 @@ public class GetGalleryTest {
     private MemberRepository memberRepository;
     @Autowired
     private GalleryRepository galleryRepository;
-    Member member;
+
+    private Member member;
     @BeforeEach
-    void setupJWT() {
-        member = memberRepository.findByEmail("test1@gmail.com").get();
+    void setUp() {
+        member = memberRepository.save(Member.builder()
+                .nickname("gallery Writer")
+                .email("gallery@gmail.com")
+                .profile("/path/gallery")
+                .role(Role.USER)
+                .status(MemberStatus.ACTIVE)
+                .build());
     }
 
     @DisplayName("정상적인 조회 요청은 성공한다")

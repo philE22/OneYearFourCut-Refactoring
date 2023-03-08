@@ -5,10 +5,12 @@ import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.repository.GalleryRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.MemberStatus;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
-import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,16 +21,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
-import static com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode.*;
+import static com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode.OPEN_GALLERY_EXIST;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
+//@Transactional
 public class PostGalleryTest {
     @Autowired
     private MockMvc mockMvc;
@@ -48,8 +51,20 @@ public class PostGalleryTest {
 
     @BeforeEach
     void setupJWT() {
-        member = memberRepository.findByEmail("test1@gmail.com").get();
+        member = memberRepository.save(Member.builder()
+                .nickname("gallery Writer")
+                .email("gallery@gmail.com")
+                .profile("/path/gallery")
+                .role(Role.USER)
+                .status(MemberStatus.ACTIVE)
+                .build());
         jwt = jwtTokenizer.testJwtGenerator(member);
+    }
+
+    @AfterEach
+    void afterSetUp() {
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @Test
@@ -86,15 +101,13 @@ public class PostGalleryTest {
                 .title("테스트 제목1")
                 .content("테스트 내용1")
                 .build();
-        String body = gson.toJson(galleryRequestDto1);
-
-        Gallery gallery = Gallery.builder()
-                .member(member)
-                .title(title)
-                .content(content)
+        galleryRepository.save(Gallery.builder()
                 .status(GalleryStatus.OPEN)
-                .build();
-        galleryRepository.save(gallery);
+                .member(member)
+                .title("title")
+                .content("content")
+                .build());
+        String body = gson.toJson(galleryRequestDto1);
 
         //when
         ResultActions actions = mockMvc.perform(
@@ -197,6 +210,7 @@ public class PostGalleryTest {
 
         actions.andExpect(status().isBadRequest());
     }
+
     @DisplayName("제목이 space이면 전시관 등록이 실패한다")
     @Test
     void spaceTitleTest() throws Exception {
@@ -218,6 +232,7 @@ public class PostGalleryTest {
 
         actions.andExpect(status().isBadRequest());
     }
+
     @DisplayName("내용이 space이면 전시관 등록이 실패한다")
     @Test
     void spaceContentTest() throws Exception {

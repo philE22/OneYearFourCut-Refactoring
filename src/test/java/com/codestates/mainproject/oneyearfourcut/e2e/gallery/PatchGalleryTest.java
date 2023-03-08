@@ -5,6 +5,8 @@ import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.repository.GalleryRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Member;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.MemberStatus;
+import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.google.gson.Gson;
@@ -42,16 +44,23 @@ public class PatchGalleryTest {
     String title = "수정 제목";
     String content = "수정 내용";
     String jwt;
+    private Member member;
+    private Gallery savedGallery;
     @BeforeEach
-    void gallerySetup() {
-        Member member = memberRepository.findByEmail("test1@gmail.com").get();
-        Gallery gallery = Gallery.builder()
+    void setUp() {
+        member = memberRepository.save(Member.builder()
+                .nickname("gallery Writer")
+                .email("gallery@gmail.com")
+                .profile("/path/gallery")
+                .role(Role.USER)
+                .status(MemberStatus.ACTIVE)
+                .build());
+        savedGallery = galleryRepository.save(Gallery.builder()
                 .title("원래 제목")
                 .content("원래 내용")
                 .member(member)
                 .status(GalleryStatus.OPEN)
-                .build();
-        galleryRepository.save(gallery);
+                .build());
         jwt = jwtTokenizer.testJwtGenerator(member);
     }
 
@@ -74,7 +83,7 @@ public class PatchGalleryTest {
                         .content(body)
         );
 
-        Gallery gallery = memberRepository.findByEmail("test1@gmail.com").get().getGalleryList().get(0);
+        Gallery gallery = galleryRepository.findById(savedGallery.getGalleryId()).get();
 
         //then
         actions.andExpect(status().isOk());
@@ -100,8 +109,7 @@ public class PatchGalleryTest {
                         .content(body)
         );
 
-        Gallery gallery = memberRepository.findByEmail("test1@gmail.com").get().getGalleryList().get(0);
-
+        Gallery gallery = galleryRepository.findById(savedGallery.getGalleryId()).get();
         //then
         actions.andExpect(status().isOk());
         assertThat(gallery.getTitle()).isEqualTo(title);
@@ -126,8 +134,7 @@ public class PatchGalleryTest {
                         .content(body)
         );
 
-        Gallery gallery = memberRepository.findByEmail("test1@gmail.com").get().getGalleryList().get(0);
-
+        Gallery gallery = galleryRepository.findById(savedGallery.getGalleryId()).get();
         //then
         actions.andExpect(status().isOk());
         assertThat(gallery.getTitle()).isEqualTo("원래 제목");

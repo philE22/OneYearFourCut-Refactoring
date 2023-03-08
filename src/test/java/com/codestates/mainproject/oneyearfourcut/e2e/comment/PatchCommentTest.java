@@ -15,6 +15,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.repository.Member
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,15 +26,18 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class PatchCommentTest {
     @Autowired
     private MockMvc mockMvc;
@@ -49,6 +53,8 @@ public class PatchCommentTest {
     private CommentRepository commentRepository;
     @Autowired
     private JwtTokenizer jwtTokenizer;
+    @Autowired
+    private EntityManager em;
 
 
     private Member galleryMember;
@@ -106,6 +112,14 @@ public class PatchCommentTest {
         savedComment = commentRepository.save(comment);
     }
 
+    @AfterEach
+    void afterSetUp() {
+        commentRepository.deleteAll();
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
+
     @DisplayName("정상적인 댓글 수정은 성공한다")
     @Test
     void successPatchTest() throws Exception {
@@ -126,8 +140,9 @@ public class PatchCommentTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         );
-
         //then
+        Comment comment = commentRepository.findById(savedComment.getCommentId()).get();
+        assertThat(comment.getContent()).isEqualTo("수정된 댓글");
         actions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.galleryId").value(savedGallery.getGalleryId()))
                 .andExpect(jsonPath("$.commentList.memberId").value(commentMember.getMemberId()))
