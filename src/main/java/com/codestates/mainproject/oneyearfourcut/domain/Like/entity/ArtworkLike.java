@@ -38,6 +38,10 @@ public class ArtworkLike extends Auditable {
         setArtwork(artwork);
     }
 
+    public boolean isLike() {
+        return this.status.equals(LikeStatus.LIKE);
+    }
+
     private void setMember(Member member) {
         if (this.member != null) {
             member.getArtworkLikeList().remove(this);

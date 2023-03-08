@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Positive;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class ArtworkLikeController {
                                             @Positive @PathVariable("gallery-id") Long galleryId,
                                             @Positive @PathVariable("artwork-id") Long artworkId) {
 
-        artworkLikeService.updateArtworkLike(memberId, galleryId, artworkId);
+        artworkLikeService.updateArtworkLike(memberId, galleryId, artworkId, LocalDateTime.now());
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
