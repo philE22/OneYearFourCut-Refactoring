@@ -10,6 +10,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class PatchGalleryTest {
     @Autowired
     private MockMvc mockMvc;
@@ -62,6 +62,11 @@ public class PatchGalleryTest {
                 .status(GalleryStatus.OPEN)
                 .build());
         jwt = jwtTokenizer.testJwtGenerator(member);
+    }
+    @AfterEach
+    void clear() {
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @DisplayName("제목, 내용 모두 바꾸는 요청에 성공한다")

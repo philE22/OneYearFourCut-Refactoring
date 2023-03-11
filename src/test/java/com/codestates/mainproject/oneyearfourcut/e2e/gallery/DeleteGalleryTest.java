@@ -9,6 +9,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class DeleteGalleryTest {
     @Autowired
     private MockMvc mockMvc;
@@ -53,6 +53,11 @@ public class DeleteGalleryTest {
                 .status(MemberStatus.ACTIVE)
                 .build());
     }
+    @AfterEach
+    void clear() {
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
 
     @DisplayName("정상적인 삭제 요청은 성공한다")
     @Test
@@ -75,8 +80,9 @@ public class DeleteGalleryTest {
         );
 
         //then
+        Gallery foundGallery = galleryRepository.findById(savedGallery.getGalleryId()).get();
         actions.andExpect(status().isNoContent());
-        assertThat(savedGallery.getStatus()).isEqualTo(GalleryStatus.CLOSED);
+        assertThat(foundGallery.getStatus()).isEqualTo(GalleryStatus.CLOSED);
     }
 
     @DisplayName("폐쇄된 전시회 삭제는 실패한다.")

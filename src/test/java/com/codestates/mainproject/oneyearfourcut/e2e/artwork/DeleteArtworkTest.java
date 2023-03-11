@@ -13,6 +13,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.repository.Member
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,8 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import javax.transaction.Transactional;
-
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -32,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class DeleteArtworkTest {
     @Autowired
     private MockMvc mockMvc;
@@ -87,6 +85,12 @@ public class DeleteArtworkTest {
         artwork.setImagePath("/path/test");
 
         savedArtwork = artworkRepository.save(artwork);
+    }
+    @AfterEach
+    void clear() {
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @DisplayName("정상적인 삭제요청은 성공한다.")

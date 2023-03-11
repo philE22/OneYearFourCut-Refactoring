@@ -1,5 +1,7 @@
 package com.codestates.mainproject.oneyearfourcut.e2e.artwork;
 
+import com.codestates.mainproject.oneyearfourcut.domain.alarm.repository.AlarmRepository;
+import com.codestates.mainproject.oneyearfourcut.domain.artwork.repository.ArtworkRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.repository.GalleryRepository;
@@ -11,6 +13,7 @@ import com.codestates.mainproject.oneyearfourcut.global.aws.service.AwsS3Service
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,8 +26,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import javax.transaction.Transactional;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -33,7 +34,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class PostArtworkTest {
     @Autowired
     private MockMvc mockMvc;
@@ -43,6 +43,10 @@ public class PostArtworkTest {
     private MemberRepository memberRepository;
     @Autowired
     private GalleryRepository galleryRepository;
+    @Autowired
+    private ArtworkRepository artworkRepository;
+    @Autowired  //작품생성 시 알람이 등록되서 초기화 하기 위해 사용
+    private AlarmRepository alarmRepository;
     @Autowired
     private JwtTokenizer jwtTokenizer;
     @MockBean
@@ -86,6 +90,14 @@ public class PostArtworkTest {
         jwt = jwtTokenizer.testJwtGenerator(artworkMember);
 
     }
+    @AfterEach
+    void clear() {
+        alarmRepository.deleteAll();
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
+
 
     @DisplayName("정상적인 작품 등록에 성공한다.")
     @Test

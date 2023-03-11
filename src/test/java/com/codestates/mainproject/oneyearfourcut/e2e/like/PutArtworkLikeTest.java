@@ -3,6 +3,7 @@ package com.codestates.mainproject.oneyearfourcut.e2e.like;
 import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.ArtworkLike;
 import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.LikeStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.Like.repository.ArtworkLikeRepository;
+import com.codestates.mainproject.oneyearfourcut.domain.alarm.repository.AlarmRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.entity.Artwork;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.repository.ArtworkRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
@@ -15,6 +16,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.repository.Member
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,7 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class PutArtworkLikeTest {
 
     @Autowired
@@ -48,6 +49,8 @@ public class PutArtworkLikeTest {
     private ArtworkRepository artworkRepository;
     @Autowired
     private ArtworkLikeRepository artworkLikeRepository;
+    @Autowired
+    private AlarmRepository alarmRepository;
     @Autowired
     private JwtTokenizer jwtTokenizer;
 
@@ -96,6 +99,14 @@ public class PutArtworkLikeTest {
                 .role(Role.USER)
                 .status(MemberStatus.ACTIVE)
                 .build());
+    }
+    @AfterEach
+    void clear() {
+        alarmRepository.deleteAll();
+        artworkLikeRepository.deleteAll();
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @DisplayName("정상적인 등록은 성공한다")

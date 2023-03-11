@@ -1,7 +1,6 @@
 package com.codestates.mainproject.oneyearfourcut.e2e.artwork;
 
 import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.ArtworkLike;
-import com.codestates.mainproject.oneyearfourcut.domain.Like.entity.LikeStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.Like.repository.ArtworkLikeRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.entity.Artwork;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.repository.ArtworkRepository;
@@ -13,6 +12,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.entity.MemberStat
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class getOneYearFourCutTest {
     @Autowired
     private MockMvc mockMvc;
@@ -78,6 +76,14 @@ public class getOneYearFourCutTest {
                 .status(GalleryStatus.OPEN)
                 .build());
     }
+    @AfterEach
+    void clear() {
+        artworkLikeRepository.deleteAll();
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
+
 
     @DisplayName("좋아요가 높은 순으로 4개의 작품만 조회된다.")
     @Test

@@ -10,6 +10,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.repository.Member
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class GetGalleryTest {
     @Autowired
     private MockMvc mockMvc;
@@ -52,6 +52,11 @@ public class GetGalleryTest {
                 .role(Role.USER)
                 .status(MemberStatus.ACTIVE)
                 .build());
+    }
+    @AfterEach
+    void clear() {
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @DisplayName("정상적인 조회 요청은 성공한다")

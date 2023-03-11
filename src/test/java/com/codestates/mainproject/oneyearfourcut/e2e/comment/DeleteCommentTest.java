@@ -13,6 +13,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,15 +24,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import javax.transaction.Transactional;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class DeleteCommentTest {
     @Autowired
     private MockMvc mockMvc;
@@ -99,6 +97,14 @@ public class DeleteCommentTest {
                 .build();
         savedComment = commentRepository.save(comment);
     }
+    @AfterEach
+    void clear() {
+        commentRepository.deleteAll();
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
+
 
     @DisplayName("정상적인 삭제는 성공한다")
     @Test

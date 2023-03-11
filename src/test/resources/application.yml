@@ -7,9 +7,6 @@ spring:
     defer-datasource-initialization: true
   profiles:
     include: oauth
-  sql:
-    init:
-      data-locations: classpath*:db/testdata.sql
 
 #logging:
 #  level:

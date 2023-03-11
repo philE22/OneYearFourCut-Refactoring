@@ -12,6 +12,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.entity.MemberStat
 import com.codestates.mainproject.oneyearfourcut.domain.member.entity.Role;
 import com.codestates.mainproject.oneyearfourcut.domain.member.repository.MemberRepository;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class GetGalleryCommentTest {
     @Autowired
     private MockMvc mockMvc;
@@ -89,7 +89,13 @@ public class GetGalleryCommentTest {
                 .status(MemberStatus.ACTIVE)
                 .build());
     }
-
+    @AfterEach
+    void clear() {
+        commentRepository.deleteAll();
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
     @DisplayName("작품 댓글까지 모두 조회된다.")
     @Test
     void successGetTest() throws Exception {

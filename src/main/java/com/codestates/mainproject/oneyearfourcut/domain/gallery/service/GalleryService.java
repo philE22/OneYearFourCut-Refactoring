@@ -53,7 +53,6 @@ public class GalleryService {
         return savedGallery.toGalleryResponseDto();
     }
 
-    @Transactional(readOnly = true)
     public Gallery findGallery(Long galleryId) {
         Optional<Gallery> optionalGallery = galleryRepository.findById(galleryId);
 
@@ -64,6 +63,10 @@ public class GalleryService {
         if (findGallery.getStatus() == CLOSED) throw new BusinessLogicException(ExceptionCode.CLOSED_GALLERY);
 
         return findGallery;
+    }
+    @Transactional(readOnly = true)
+    public GalleryResponseDto findGalleryResponseDto(Long galleryId) {
+        return findGallery(galleryId).toGalleryResponseDto();
     }
 
     public void deleteGallery(Long loginId) {

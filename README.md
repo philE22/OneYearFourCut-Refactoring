@@ -42,3 +42,17 @@
 ![변경 전](imgDirectory/img_1.png)
   (변경 후)
 ![변경 후](imgDirectory/img_2.png)
+
+---
+## (3/11) 테스트 코드 트랜잭션 삭제
+- sse 방식으로 알람을 전송하기 때문에 커넥션 풀 부족 현상이 일어나기 쉬워 OSIV를 비활성화 해야함
+- 그러기 위해서는 Lazy Loading Exception이 발생하는 것을 테스트에서 확인할 수 있어야하기 때문에 트랜잭션이 없는 테스트를 구현해야함
+- 테스트 코드에서 @Transaction을 제거했으며 @BeforeEach, @AfterEach로 데이터 초기화 실행
+- Gallery 도메인의 비지니스 로직에 Lazy Loading하는 부분이 있어 로직 일부 수정
+
+---
+
+
+해야할것
+1. 테스트에 트랜잭션 제거하기
+2. 

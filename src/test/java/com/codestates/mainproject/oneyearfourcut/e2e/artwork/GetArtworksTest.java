@@ -14,6 +14,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.repository.Member
 import com.codestates.mainproject.oneyearfourcut.global.aws.service.AwsS3Service;
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,15 +27,12 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import javax.transaction.Transactional;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class GetArtworksTest {
     @Autowired
     private MockMvc mockMvc;
@@ -92,6 +90,13 @@ public class GetArtworksTest {
         jwt = jwtTokenizer.testJwtGenerator(artworkMember);
 
     }
+    @AfterEach
+    void clear() {
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
+
 
     @DisplayName("로그인한 회원이 작품 조회하면, 좋아요 여부와 함께 정상 조회된다.")
     @Test
@@ -133,7 +138,7 @@ public class GetArtworksTest {
                 .andExpect(jsonPath("$.[3].liked").value(true));
     }
 
-    @DisplayName("비 로그인 상태로 작품조회하면, 좋아요 상태 없이 함께 정상 조회된다.")
+    @DisplayName("비 로그인 상태로 작품 조회하면, 좋아요 상태 없이 함께 정상 조회된다.")
     @Test
     void anonymousFindTest() throws Exception {
         //given

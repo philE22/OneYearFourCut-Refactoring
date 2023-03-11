@@ -1,8 +1,10 @@
 package com.codestates.mainproject.oneyearfourcut.e2e.comment;
 
+import com.codestates.mainproject.oneyearfourcut.domain.alarm.repository.AlarmRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.entity.Artwork;
 import com.codestates.mainproject.oneyearfourcut.domain.artwork.repository.ArtworkRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.comment.dto.CommentRequestDto;
+import com.codestates.mainproject.oneyearfourcut.domain.comment.repository.CommentRepository;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.Gallery;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.entity.GalleryStatus;
 import com.codestates.mainproject.oneyearfourcut.domain.gallery.repository.GalleryRepository;
@@ -13,6 +15,7 @@ import com.codestates.mainproject.oneyearfourcut.domain.member.repository.Member
 import com.codestates.mainproject.oneyearfourcut.global.config.auth.jwt.JwtTokenizer;
 import com.codestates.mainproject.oneyearfourcut.global.exception.exception.ExceptionCode;
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +34,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class PostArtworkCommentTest {
     @Autowired
     private MockMvc mockMvc;
@@ -43,6 +45,10 @@ public class PostArtworkCommentTest {
     private GalleryRepository galleryRepository;
     @Autowired
     private ArtworkRepository artworkRepository;
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private AlarmRepository alarmRepository;
     @Autowired
     private JwtTokenizer jwtTokenizer;
 
@@ -92,6 +98,14 @@ public class PostArtworkCommentTest {
                 .role(Role.USER)
                 .status(MemberStatus.ACTIVE)
                 .build());
+    }
+    @AfterEach
+    void clear() {
+        alarmRepository.deleteAll();
+        commentRepository.deleteAll();
+        artworkRepository.deleteAll();
+        galleryRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @DisplayName("정상적인 작품 댓글 등록이 성공한다.")

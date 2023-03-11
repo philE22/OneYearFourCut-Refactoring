@@ -34,9 +34,9 @@ public class GalleryController {
     //전시관 조회
     @GetMapping("/{gallery-id}")
     public ResponseEntity getGallery(@PathVariable("gallery-id") Long galleryId) {
-        Gallery findGallery = galleryService.findGallery(galleryId);
+        GalleryResponseDto galleryResponseDto = galleryService.findGalleryResponseDto(galleryId);
 
-        return new ResponseEntity<>(findGallery.toGalleryResponseDto(), HttpStatus.OK);
+        return new ResponseEntity<>(galleryResponseDto, HttpStatus.OK);
     }
 
     //전시관 수정
